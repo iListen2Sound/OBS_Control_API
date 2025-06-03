@@ -117,6 +117,33 @@ namespace OBS_Control_API
             var resp = SendRequest("SetRecordDirectory", parameters);
             return !(resp is null);
         }
+        public static RequestResponse.GetCurrentProgramScene GetCurrentProgramScene()
+        {
+            var resp = SendRequest("GetCurrentProgramScene");
+            if (resp is null) return null;
+            return JsonConvert.DeserializeObject<RequestResponse.GetCurrentProgramScene>(resp);
+        }
+        public static bool SaveSourceScreenshot()
+        {
+            string separator = isWindows ? "\\" : "/";
+            string fileName = $"Screenshot {DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss")}.png";
+            return SaveSourceScreenshot(recordingDirectory + separator + fileName);
+        }
+        public static bool SaveSourceScreenshot(string imageFilePath)
+        {
+            return SaveSourceScreenshot(sceneUuid, imageFilePath);
+        }
+        public static bool SaveSourceScreenshot(string sourceUuid, string imageFilePath)
+        {
+            var parameters = new Dictionary<string, object>
+            {
+                ["sourceUuid"] = sourceUuid,
+                ["imageFormat"] = "png",
+                ["imageFilePath"] = imageFilePath
+            };
+            var resp = SendRequest("SaveSourceScreenshot", parameters);
+            return !(resp is null);
+        }
         private void SetMainStatus()
         {
             try
@@ -124,6 +151,9 @@ namespace OBS_Control_API
                 isReplayBufferActive = GetReplayBufferStatus().outputActive;
                 isRecordingActive = GetRecordStatus().outputActive;
                 isStreamActive = GetStreamStatus().outputActive;
+                sceneUuid = GetCurrentProgramScene().sceneUuid;
+                isWindows = (GetVersion().platform == "windows");
+                recordingDirectory = GetRecordDirectory().recordDirectory;
             }
             catch (Exception ex)
             {
@@ -185,6 +215,13 @@ namespace OBS_Control_API
         public class GetRecordDirectory
         {
             public string recordDirectory { get; set; }
+        }
+        public class GetCurrentProgramScene
+        {
+            public string sceneName { get; set; }
+            public string sceneUuid { get; set; }
+            public string currentProgramSceneName { get; set; }
+            public string currentProgramSceneUuid { get; set; }
         }
     }
 

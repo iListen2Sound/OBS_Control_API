@@ -36,6 +36,9 @@ namespace OBS_Control_API
         private static bool isReplayBufferActive = false;
         private static bool isRecordingActive = false;
         private static bool isStreamActive = false;
+        private static bool isWindows = true;
+        private static string recordingDirectory = "";
+        private static string sceneUuid = "";
         private static bool stopReplayBufferAtShutdown = false;
 
         /**
@@ -78,9 +81,6 @@ namespace OBS_Control_API
             InitEvents();
             onConnect += OnConnect;
             onDisconnect += OnDisconnect;
-            onRecordingStarted += Feedback;
-            onRecordingStopping += Feedback;
-            onReplayBufferSaved += Feedback;
         }
 
         /**
@@ -178,7 +178,8 @@ namespace OBS_Control_API
                     "- Save replay buffer\n" +
                     "- Start recording\n" +
                     "- Stop recording\n" +
-                    "- Toggle recording", new Tags { });
+                    "- Toggle recording\n" +
+                    "- Save screenshot", new Tags { });
             Mod.AddToList("Key binding: both right buttons", "Nothing",
                     "Action to perform when both buttons on the right controller are being pressed.\n" +
                     "Possible values:\n" +
@@ -186,7 +187,8 @@ namespace OBS_Control_API
                     "- Save replay buffer\n" +
                     "- Start recording\n" +
                     "- Stop recording\n" +
-                    "- Toggle recording", new Tags { });
+                    "- Toggle recording\n" +
+                    "- Save screenshot", new Tags { });
             Mod.AddToList("Haptic feedback duration", 0.2f, "Duration of the haptic impulse when the recording state changes.", new Tags { });
             Mod.GetFromFile();
         }
@@ -227,18 +229,21 @@ namespace OBS_Control_API
         private void ExecuteKeyBinding(int index)
         {
             bindingLocked[index] = true;
+            bool success = false;
             switch (keyBindings[index])
             {
                 case "Save replay buffer":
                     if(SaveReplayBuffer())
                     {
                         Log($"Saved replay buffer");
+                        success = true;
                     }
                     break;
                 case "Start recording":
                     if (StartRecord())
                     {
                         Log($"Started recording");
+                        success = true;
                     }
                     break;
                 case "Stop recording":
@@ -247,6 +252,7 @@ namespace OBS_Control_API
                         if (res != null)
                         {
                             Log($"Stopped recording, saved to: {res.outputPath}");
+                            success = true;
                         }
                     }
                     break;
@@ -258,12 +264,24 @@ namespace OBS_Control_API
                             var active = res.outputActive;
                             string toggleValue = active ? "Started" : "Stopped";
                             Log($"{toggleValue} recording");
+                            success = true;
                         }
+                    }
+                    break;
+                case "Save screenshot":
+                    if (SaveSourceScreenshot())
+                    {
+                        Log($"Saved screenshot");
+                        success = true;
                     }
                     break;
                 default:
                     Log($"Invalid key binding \"{keyBindings[index]}\"");
                     break;
+            }
+            if (success)
+            {
+                Feedback();
             }
             MelonCoroutines.Start(UnlockKeyBinding(index));
         }
@@ -291,16 +309,6 @@ namespace OBS_Control_API
             {
                 HapticFeedback(1, hapticsDuration);
             }
-        }
-
-        /**
-         * <summary>
-         * If needed, perform a feedback to notify the user of an event (for events that provide a string)
-         * </summary>
-         */
-        private void Feedback(string value)
-        {
-            Feedback();
         }
 
         /**

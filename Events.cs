@@ -20,6 +20,7 @@ namespace OBS_Control_API
         public static event Action onStreamStarted;
         public static event Action onStreamStopped;
         public static event Action<string> onRecordFileChanged;
+        public static event Action<string> onScreenshotSaved;
 
         /**
          * <summary>
@@ -103,6 +104,11 @@ namespace OBS_Control_API
                 var eventData = JsonConvert.DeserializeObject<Event.RecordFileChanged>(eventDataStr);
                 Task.Run(() => onRecordFileChanged(eventData.newOutputPath));
             }
+            else if (data.eventType == "ScreenshotSaved")
+            {
+                var eventData = JsonConvert.DeserializeObject<Event.ScreenshotSaved>(eventDataStr);
+                Task.Run(() => onScreenshotSaved(eventData.savedScreenshotPath));
+            }
         }
     }
 }
@@ -132,6 +138,10 @@ namespace OBS_Control_API
         public class RecordFileChanged
         {
             public string newOutputPath { get; set; }
+        }
+        public class ScreenshotSaved
+        {
+            public string savedScreenshotPath { get; set; }
         }
     }
 

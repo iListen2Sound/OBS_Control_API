@@ -37,10 +37,8 @@ In addition to the displayed dependencies, this mod requires the **obs-websocket
         - Start recording
         - Stop recording
         - Toggle recording
-    - what duration do you want for the haptic feedback every time the recording state changes (Set to 0 to disable)? This includes the following events:
-        - recording started
-        - recording stopping
-        - replay buffer saved
+        - Save screenshot
+    - what duration do you want for the haptic feedback after a key binding action is successful (Set to 0 to disable)?
 
 The **default configuration** is set to automatically start the replay buffer when the client connects, save the replay buffer when the two buttons on the left controller are pressed (no binding for the right one), and it will give haptic feedback as confirmation that the clip was successfully saved.
 
@@ -209,6 +207,15 @@ public class GetRecordDirectory
 #### bool SetRecordDirectory(string recordDirectory)
 Sets a new directory to write recording files to.
 
+#### bool SaveSourceScreenshot()
+Save a new screenshot from the current scene. The file has an auto-generated timestamp name.
+
+#### bool SaveSourceScreenshot(string imageFilePath)
+Save a new screenshot from the current scene to a specific file.
+
+#### bool SaveSourceScreenshot(string sourceUuid, string imageFilePath)
+Save a new screenshot from a specific source and to a specific file.
+
 #### string SendRequest(string requestType, object parameters)
 Generic request function that can be used for requests that are not in the list above. The `parameters` object needs to be constructed specifically for the request type. The returned string is the extracted `responseData` json, it needs to be parsed differently depending on the request type. It may be `null` if the request type does not have a response in the API.
 
@@ -236,9 +243,12 @@ public static event Action onRecordingResumed;
 public static event Action onStreamStarted;
 public static event Action onStreamStopped;
 public static event Action<string> onRecordFileChanged; //newOutputPath
+public static event Action<string> onScreenshotSaved;
 ```
 
 Note that `onConnect` is triggered after the client is connected **and identified**, ie when the mod is ready to send requests and receive events. If the client connects but fails to authenticate, the event will not trigger.
+
+Note that `onScreenshotSaved` is triggered for the screenshot feature available in **Settings -> Hotkeys -> Screenshot Output** ONLY. Screenshots requested by the websocket client will not trigger it.
 
 The event `onEvent` is a generic one that is triggered on **all** events that are received from You can use this if the event you want to suscribe to isn't on the list. The class has a simple structure:
 - `object eventData` that depends on the event and needs to be parsed

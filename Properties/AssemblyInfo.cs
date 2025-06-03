@@ -13,11 +13,11 @@ using OBS_Control_API; // The namespace of your mod class
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle(OBS_Control_API.BuildInfo.ModName)]
+//[assembly: AssemblyTitle(OBS_Control_API.BuildInfo.ModName)]
 [assembly: AssemblyDescription(OBS_Control_API.BuildInfo.Description)]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany(OBS_Control_API.BuildInfo.Company)]
-[assembly: AssemblyProduct(OBS_Control_API.BuildInfo.ModName)]
+//[assembly: AssemblyConfiguration("")]
+//[assembly: AssemblyCompany(OBS_Control_API.BuildInfo.Company)]
+//[assembly: AssemblyProduct(OBS_Control_API.BuildInfo.ModName)]
 [assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -40,5 +40,5 @@ using OBS_Control_API; // The namespace of your mod class
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion(OBS_Control_API.BuildInfo.ModVersion)]
-[assembly: AssemblyFileVersion(OBS_Control_API.BuildInfo.ModVersion)]
+//[assembly: AssemblyVersion(OBS_Control_API.BuildInfo.ModVersion)]
+//[assembly: AssemblyFileVersion(OBS_Control_API.BuildInfo.ModVersion)]

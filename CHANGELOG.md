@@ -1,3 +1,8 @@
+# Version 1.1.0
+- Added screenshot support
+- Added sound effects as an additional feedback option
+- Reduced the delay between the button press and the feedback
+
 # Version 1.0.2
 - Added missing configuration step to README.md
 - Fixed some API methods not being declared as static

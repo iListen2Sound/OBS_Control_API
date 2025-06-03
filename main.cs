@@ -5,13 +5,15 @@ using UnityEngine;
 using System.Collections;
 using Il2CppRUMBLE.Players.Subsystems;
 using Il2CppRUMBLE.Managers;
+using UnityEngine.Rendering;
+using System.Security.AccessControl;
 
 namespace OBS_Control_API
 {
     public static class BuildInfo
     {
         public const string ModName = "OBS_Control_API";
-        public const string ModVersion = "1.0.2";
+        public const string ModVersion = "1.1.0";
         public const string Description = "Manages a websocket connection to OBS";
         public const string Author = "Kalamart";
         public const string Company = "";
@@ -26,12 +28,13 @@ namespace OBS_Control_API
         private string[] keyBindings = { "Nothing", "Nothing" };
         private bool[] bindingLocked = { false, false };
         private float hapticsDuration = 1;
+        private bool enableSFX = true;
 
         // variables
         Mod Mod = new Mod();
-        private static ConnectionManager connectionManager;
-        private static RequestManager requestManager;
-        private static PlayerHaptics playerHaptics;
+        private static ConnectionManager connectionManager = null;
+        private static RequestManager requestManager = null;
+        private static PlayerHaptics playerHaptics = null;
 
         private static bool isReplayBufferActive = false;
         private static bool isRecordingActive = false;
@@ -40,6 +43,12 @@ namespace OBS_Control_API
         private static string recordingDirectory = "";
         private static string sceneUuid = "";
         private static bool stopReplayBufferAtShutdown = false;
+
+        private static GameObject OBS_SFX_Players = null;
+        private static GameObject screenshotSFXPlayer = null;
+        private static GameObject confirmationSFXPlayer = null;
+        private static GameObject startRecordingSFXPlayer = null;
+        private static GameObject stopRecordingSFXPlayer = null;
 
         /**
          * <summary>
@@ -83,6 +92,41 @@ namespace OBS_Control_API
             onDisconnect += OnDisconnect;
         }
 
+        private static Il2CppAssetBundle bundle;
+
+        private GameObject createAudioPlayer(AudioClip clip, string objectName, float volume)
+        {
+            GameObject player = new GameObject(objectName);
+            player.transform.SetParent(OBS_SFX_Players.transform);
+            AudioSource audioSource = player.AddComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.volume = volume;
+            return player;
+        }
+        private void LoadAssets()
+        {
+            using (System.IO.Stream bundleStream = MelonAssembly.Assembly.GetManifestResourceStream("OBS_Control_API.Resources.obs_sfx"))
+            {
+                byte[] bundleBytes = new byte[bundleStream.Length];
+                bundleStream.Read(bundleBytes, 0, bundleBytes.Length);
+                bundle = Il2CppAssetBundleManager.LoadFromMemory(bundleBytes);
+
+                Log($"Reading assets in bundle {bundle}");
+                var screenshotSFX = bundle.LoadAsset<AudioClip>("screenshot");
+                var confirmationSFX = bundle.LoadAsset<AudioClip>("confirmation");
+                var startRecordingSFX = bundle.LoadAsset<AudioClip>("start_recording");
+                var stopRecordingSFX = bundle.LoadAsset<AudioClip>("stop_recording");
+                Log($"Finished loading assets");
+
+                OBS_SFX_Players = new GameObject("OBS_SFX_Players");
+                GameObject.DontDestroyOnLoad(OBS_SFX_Players);
+                screenshotSFXPlayer = createAudioPlayer(screenshotSFX, "screenshotSFXPlayer", 1);
+                confirmationSFXPlayer = createAudioPlayer(confirmationSFX, "confirmationSFXPlayer", 0.6f);
+                startRecordingSFXPlayer = createAudioPlayer(startRecordingSFX, "startRecordingSFXPlayer", 0.2f);
+                stopRecordingSFXPlayer = createAudioPlayer(stopRecordingSFX, "stopRecordingSFXPlayer", 0.2f);
+            }
+        }
+
         /**
          * <summary>
          * Called when the scene has finished loading.
@@ -91,14 +135,15 @@ namespace OBS_Control_API
          */
         public override void OnSceneWasLoaded(int buildIndex, string sceneName)
         {
+            playerHaptics = PlayerManager.instance.playerControllerPrefab.gameObject.GetComponent<PlayerHaptics>();
             if (sceneName == "Loader")
             {
+                LoadAssets();
                 InitClient();
                 SetUIOptions();
                 OnUISaved();
                 UI.instance.UI_Initialized += OnUIInit;
             }
-            playerHaptics = PlayerManager.instance.playerControllerPrefab.gameObject.GetComponent<PlayerHaptics>();
         }
 
         /**
@@ -189,7 +234,8 @@ namespace OBS_Control_API
                     "- Stop recording\n" +
                     "- Toggle recording\n" +
                     "- Save screenshot", new Tags { });
-            Mod.AddToList("Haptic feedback duration", 0.2f, "Duration of the haptic impulse when the recording state changes.", new Tags { });
+            Mod.AddToList("Haptic feedback duration", 0.2f, "Duration of the haptic impulse when an action is successful (set to 0 to disable).", new Tags { });
+            Mod.AddToList("Audio feedback", true, 0, "Set to true to get a sound effect when an action is successful", new Tags { });
             Mod.GetFromFile();
         }
 
@@ -218,6 +264,7 @@ namespace OBS_Control_API
             keyBindings[0] = (string)Mod.Settings[4].SavedValue;
             keyBindings[1] = (string)Mod.Settings[5].SavedValue;
             hapticsDuration = (float)Mod.Settings[6].SavedValue;
+            enableSFX = (bool)Mod.Settings[7].SavedValue;
             Connect();
         }
 
@@ -230,12 +277,14 @@ namespace OBS_Control_API
         {
             bindingLocked[index] = true;
             bool success = false;
+            GameObject audioPlayer = null;
             switch (keyBindings[index])
             {
                 case "Save replay buffer":
                     if(SaveReplayBuffer())
                     {
                         Log($"Saved replay buffer");
+                        audioPlayer = confirmationSFXPlayer;
                         success = true;
                     }
                     break;
@@ -243,6 +292,7 @@ namespace OBS_Control_API
                     if (StartRecord())
                     {
                         Log($"Started recording");
+                        audioPlayer = startRecordingSFXPlayer;
                         success = true;
                     }
                     break;
@@ -252,6 +302,7 @@ namespace OBS_Control_API
                         if (res != null)
                         {
                             Log($"Stopped recording, saved to: {res.outputPath}");
+                            audioPlayer = stopRecordingSFXPlayer;
                             success = true;
                         }
                     }
@@ -264,6 +315,7 @@ namespace OBS_Control_API
                             var active = res.outputActive;
                             string toggleValue = active ? "Started" : "Stopped";
                             Log($"{toggleValue} recording");
+                            audioPlayer = active ? startRecordingSFXPlayer : stopRecordingSFXPlayer;
                             success = true;
                         }
                     }
@@ -272,6 +324,7 @@ namespace OBS_Control_API
                     if (SaveSourceScreenshot())
                     {
                         Log($"Saved screenshot");
+                        audioPlayer = screenshotSFXPlayer;
                         success = true;
                     }
                     break;
@@ -281,7 +334,7 @@ namespace OBS_Control_API
             }
             if (success)
             {
-                Feedback();
+                Feedback(audioPlayer);
             }
             MelonCoroutines.Start(UnlockKeyBinding(index));
         }
@@ -303,13 +356,58 @@ namespace OBS_Control_API
          * If needed, perform a feedback to notify the user of an event.
          * </summary>
          */
-        private void Feedback()
+        private void Feedback(GameObject audioPlayer)
         {
+            if (enableSFX && audioPlayer is not null)
+            {
+                audioPlayer.GetComponent<AudioSource>().Play();
+            }
             if (hapticsDuration > 0)
             {
                 HapticFeedback(1, hapticsDuration);
             }
         }
+
+        /**
+         * <summary>
+         * Play the confirmation tone that is used for the "save replay buffer" action.
+         * </summary>
+         */
+        public static void playConfirmationSFX()
+        {
+            confirmationSFXPlayer.GetComponent<AudioSource>().Play();
+        }
+
+        /**
+         * <summary>
+         * Play the screenshot sound effect (camera shutter sound)
+         * </summary>
+         */
+        public static void playScreenshotSFX()
+        {
+            screenshotSFXPlayer.GetComponent<AudioSource>().Play();
+        }
+
+        /**
+         * <summary>
+         * Play the "start recording" sound effect
+         * </summary>
+         */
+        public static void playStartRecordingSFX()
+        {
+            startRecordingSFXPlayer.GetComponent<AudioSource>().Play();
+        }
+
+        /**
+         * <summary>
+         * Play the "stop recording" sound effect
+         * </summary>
+         */
+        public static void playStopRecordingSFX()
+        {
+            stopRecordingSFXPlayer.GetComponent<AudioSource>().Play();
+        }
+
 
         /**
          * <summary>
@@ -331,12 +429,16 @@ namespace OBS_Control_API
          */
         public override void OnFixedUpdate()
         {
-            if (!bindingLocked[0] && keyBindings[0]!="Nothing")
+            if (!bindingLocked[0] && keyBindings[0] != "Nothing")
             {
-                if(Calls.ControllerMap.LeftController.GetPrimary() > 0 && Calls.ControllerMap.LeftController.GetSecondary() > 0)
+                if (Calls.ControllerMap.LeftController.GetPrimary() > 0 && Calls.ControllerMap.LeftController.GetSecondary() > 0)
                 {
                     Log($"Left key binding activated");
-                    ExecuteKeyBinding(0);
+                    //ExecuteKeyBinding(0);
+                    new Thread(() =>
+                    {
+                        ExecuteKeyBinding(0);
+                    }).Start();
                 }
             }
             if (!bindingLocked[1] && keyBindings[1] != "Nothing")
@@ -344,7 +446,11 @@ namespace OBS_Control_API
                 if (Calls.ControllerMap.RightController.GetPrimary() > 0 && Calls.ControllerMap.RightController.GetSecondary() > 0)
                 {
                     Log($"Right key binding activated");
-                    ExecuteKeyBinding(1);
+                    //ExecuteKeyBinding(1);
+                    new Thread(() =>
+                    {
+                        ExecuteKeyBinding(1);
+                    }).Start();
                 }
             }
         }

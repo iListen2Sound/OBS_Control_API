@@ -39,6 +39,7 @@ In addition to the displayed dependencies, this mod requires the **obs-websocket
         - Toggle recording
         - Save screenshot
     - what duration do you want for the haptic feedback after a key binding action is successful (Set to 0 to disable)?
+    - do you want to have sound effects when an action is successful?
 
 The **default configuration** is set to automatically start the replay buffer when the client connects, save the replay buffer when the two buttons on the left controller are pressed (no binding for the right one), and it will give haptic feedback as confirmation that the clip was successfully saved.
 
@@ -76,6 +77,18 @@ Forces the mod to open a websocket connection. If it was already connected, the 
 
 #### void Disconnect()
 Forces the mod to close the websocket connection. The mod will not attempt to reconnect by itself.
+
+#### void PlayConfirmationSFX()
+Play the confirmation tone that is used for the "save replay buffer" action.
+
+#### void PlayScreenshotSFX()
+Play the screenshot SFX (camera shutter sound).
+
+#### void PlayStartRecordingSFX()
+Play the "start recording" SFX (two-note rising tone).
+
+#### void PlayStopRecordingSFX()
+Play the "stop recording" SFX (two-note falling tone).
 
 #### void HapticFeedback(float intensity, float duration)
 Execute a haptic impulse on both controllers. Can be used to implement your own haptic feedback for various events.

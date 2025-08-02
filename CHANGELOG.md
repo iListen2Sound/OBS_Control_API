@@ -1,3 +1,6 @@
+# Version 1.2.0
+- Semi-fixed for 0.4.2 (audio doesn't work)
+
 # Version 1.1.0
 - Added screenshot support
 - Added sound effects as an additional feedback option

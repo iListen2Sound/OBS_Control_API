@@ -7,13 +7,14 @@ using Il2CppRUMBLE.Players.Subsystems;
 using Il2CppRUMBLE.Managers;
 using UnityEngine.Rendering;
 using System.Security.AccessControl;
+using System.Threading;
 
 namespace OBS_Control_API
 {
     public static class BuildInfo
     {
         public const string ModName = "OBS_Control_API";
-        public const string ModVersion = "1.1.0";
+        public const string ModVersion = "1.2.0";
         public const string Description = "Manages a websocket connection to OBS";
         public const string Author = "Kalamart";
         public const string Company = "";
@@ -92,7 +93,7 @@ namespace OBS_Control_API
             onDisconnect += OnDisconnect;
         }
 
-        private static Il2CppAssetBundle bundle;
+        //private static Il2CppAssetBundle bundle;
 
         private GameObject createAudioPlayer(AudioClip clip, string objectName, float volume)
         {
@@ -105,26 +106,21 @@ namespace OBS_Control_API
         }
         private void LoadAssets()
         {
-            using (System.IO.Stream bundleStream = MelonAssembly.Assembly.GetManifestResourceStream("OBS_Control_API.Resources.obs_sfx"))
-            {
-                byte[] bundleBytes = new byte[bundleStream.Length];
-                bundleStream.Read(bundleBytes, 0, bundleBytes.Length);
-                bundle = Il2CppAssetBundleManager.LoadFromMemory(bundleBytes);
+            string bundleName = "OBS_Control_API.Resources.obs_sfx";
 
-                Log($"Reading assets in bundle {bundle}");
-                var screenshotSFX = bundle.LoadAsset<AudioClip>("screenshot");
-                var confirmationSFX = bundle.LoadAsset<AudioClip>("confirmation");
-                var startRecordingSFX = bundle.LoadAsset<AudioClip>("start_recording");
-                var stopRecordingSFX = bundle.LoadAsset<AudioClip>("stop_recording");
-                Log($"Finished loading assets");
+            Log($"Reading assets in bundle {bundleName}");
+            var screenshotSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "screenshot");
+            var confirmationSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "confirmation");
+            var startRecordingSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "start_recording");
+            var stopRecordingSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "stop_recording");
+            Log($"Finished loading assets");
 
-                OBS_SFX_Players = new GameObject("OBS_SFX_Players");
-                GameObject.DontDestroyOnLoad(OBS_SFX_Players);
-                screenshotSFXPlayer = createAudioPlayer(screenshotSFX, "screenshotSFXPlayer", 1);
-                confirmationSFXPlayer = createAudioPlayer(confirmationSFX, "confirmationSFXPlayer", 0.6f);
-                startRecordingSFXPlayer = createAudioPlayer(startRecordingSFX, "startRecordingSFXPlayer", 0.2f);
-                stopRecordingSFXPlayer = createAudioPlayer(stopRecordingSFX, "stopRecordingSFXPlayer", 0.2f);
-            }
+            OBS_SFX_Players = new GameObject("OBS_SFX_Players");
+            GameObject.DontDestroyOnLoad(OBS_SFX_Players);
+            screenshotSFXPlayer = createAudioPlayer(screenshotSFX, "screenshotSFXPlayer", 1);
+            confirmationSFXPlayer = createAudioPlayer(confirmationSFX, "confirmationSFXPlayer", 0.6f);
+            startRecordingSFXPlayer = createAudioPlayer(startRecordingSFX, "startRecordingSFXPlayer", 0.2f);
+            stopRecordingSFXPlayer = createAudioPlayer(stopRecordingSFX, "stopRecordingSFXPlayer", 0.2f);
         }
 
         /**

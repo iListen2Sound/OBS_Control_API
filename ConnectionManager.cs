@@ -72,7 +72,7 @@ namespace OBS_Control_API
              */
             public void Start()
             {
-                Task.Run(() => ConnectAsync());
+                Task.Run((Func<Task>)(() => ConnectAsync()));
             }
 
             /**
@@ -267,7 +267,8 @@ namespace OBS_Control_API
                 var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg));
                 var segment = new ArraySegment<byte>(buffer);
                 //Log($"Sending message: {JsonConvert.SerializeObject(msg)}");
-                await Task.Run(() => ws.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None));
+                var task = () => ws.SendAsync(segment, WebSocketMessageType.Text, true, CancellationToken.None);
+                await Task.Run(task);
             }
         }
     }

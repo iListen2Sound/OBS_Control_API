@@ -1,3 +1,6 @@
+# Version 1.2.1
+- Fixed IsRecordingActive() inconsistency with paused state
+
 # Version 1.2.0
 - Semi-fixed for 0.4.2 (audio doesn't work)
 

@@ -149,7 +149,8 @@ namespace OBS_Control_API
             try
             {
                 isReplayBufferActive = GetReplayBufferStatus().outputActive;
-                isRecordingActive = GetRecordStatus().outputActive;
+                var recordStatus = GetRecordStatus();
+                isRecordingActive = recordStatus.outputActive && !recordStatus.outputPaused;
                 isStreamActive = GetStreamStatus().outputActive;
                 sceneUuid = GetCurrentProgramScene().sceneUuid;
                 isWindows = (GetVersion().platform == "windows");

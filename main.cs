@@ -1,6 +1,6 @@
 ﻿using MelonLoader;
 using RumbleModUI;
-using RumbleModdingAPI;
+using RumbleModdingAPI.RMAPI;
 using UnityEngine;
 using System.Collections;
 using Il2CppRUMBLE.Players.Subsystems;
@@ -8,13 +8,14 @@ using Il2CppRUMBLE.Managers;
 using UnityEngine.Rendering;
 using System.Security.AccessControl;
 using System.Threading;
+using System.Reflection;
 
 namespace OBS_Control_API
 {
     public static class BuildInfo
     {
         public const string ModName = "OBS_Control_API";
-        public const string ModVersion = "1.2.1";
+        public const string ModVersion = "1.3.0";
         public const string Description = "Manages a websocket connection to OBS";
         public const string Author = "Kalamart";
         public const string Company = "";
@@ -106,13 +107,14 @@ namespace OBS_Control_API
         }
         private void LoadAssets()
         {
+            //TODO get sound without asset bundles
             string bundleName = "OBS_Control_API.Resources.obs_sfx";
 
             Log($"Reading assets in bundle {bundleName}");
-            var screenshotSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "screenshot");
-            var confirmationSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "confirmation");
-            var startRecordingSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "start_recording");
-            var stopRecordingSFX = Calls.LoadAssetFromStream<AudioClip>(this, bundleName, "stop_recording");
+            var screenshotSFX = AssetBundles.LoadAssetFromStream<AudioClip>(this, bundleName, "screenshot");
+            var confirmationSFX = AssetBundles.LoadAssetFromStream<AudioClip>(this, bundleName, "confirmation");
+            var startRecordingSFX = AssetBundles.LoadAssetFromStream<AudioClip>(this, bundleName, "start_recording");
+            var stopRecordingSFX = AssetBundles.LoadAssetFromStream<AudioClip>(this, bundleName, "stop_recording");
             Log($"Finished loading assets");
 
             OBS_SFX_Players = new GameObject("OBS_SFX_Players");

@@ -1,3 +1,6 @@
+# Version 1.3.0
+- Partially fixed the mod for v0.5
+
 # Version 1.2.1
 - Fixed IsRecordingActive() inconsistency with paused state
 

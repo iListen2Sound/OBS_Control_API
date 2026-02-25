@@ -16,6 +16,10 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\obs_sfx" />
+    <EmbeddedResource Include="Resources\confirmation.mp3" />
+    <EmbeddedResource Include="Resources\screenshot.mp3" />
+    <EmbeddedResource Include="Resources\start_recording.mp3" />
+    <EmbeddedResource Include="Resources\stop_recording.mp3" />
   </ItemGroup>
 
   <ItemGroup>

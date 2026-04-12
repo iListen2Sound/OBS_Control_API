@@ -9,6 +9,7 @@ using OBS_Control_API; // The namespace of your mod class
 [assembly: MelonGame("Buckethead Entertainment", "RUMBLE")]
 [assembly: MelonColor(255, 255, 31, 90)]
 [assembly: MelonAuthorColor(255, 255, 31, 90)]
+[assembly: MelonAdditionalDependencies("UIFramework","RumbleModdingAPI")]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information

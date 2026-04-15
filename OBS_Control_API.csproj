@@ -1,70 +1,48 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <WarningLevel>0</WarningLevel>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<WarningLevel>0</WarningLevel>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <ImplicitUsings>disable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<RumblePath>G:\SteamLibrary\steamapps\common\RUMBLE</RumblePath>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\obs_sfx" />
-    <EmbeddedResource Include="Resources\confirmation.mp3" />
-    <EmbeddedResource Include="Resources\screenshot.mp3" />
-    <EmbeddedResource Include="Resources\start_recording.mp3" />
-    <EmbeddedResource Include="Resources\stop_recording.mp3" />
-  </ItemGroup>
+	<PropertyGroup>
+		<ImplicitUsings>disable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Il2CppBucketheadEntertainment.Plugins">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\Il2CppBucketheadEntertainment.Plugins.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2Cppmscorlib">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\Il2Cppmscorlib.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2CppRUMBLE.Plugins">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\Il2CppRUMBLE.Plugins.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2CppRUMBLE.Runtime">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\Il2CppRUMBLE.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.AudioModule">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\UnityEngine.AudioModule.dll</HintPath>
-    </Reference>
-    <Reference Include="Il2CppInterop.Runtime">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\net6\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-<!--    <Reference Include="UnityEngine.Il2CppAssetBundleManager">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\net6\UnityEngine.Il2CppAssetBundleManager.dll</HintPath>
-    </Reference>-->
-    <Reference Include="MelonLoader, Version=0.5.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\net6\MelonLoader.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Z:\RUMBLE\RUMBLE_install\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
-    </Reference>
-    <Reference Include="RumbleModdingAPI">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\Mods\RumbleModdingAPI.dll</HintPath>
-    </Reference>
-    <Reference Include="ModUI">
-      <HintPath>Z:\RUMBLE\RUMBLE_install\Mods\ModUI.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\sfx_assets\confirmation.wav" />
+		<EmbeddedResource Include="Resources\sfx_assets\screenshot.wav" />
+		<EmbeddedResource Include="Resources\sfx_assets\start_recording.wav" />
+		<EmbeddedResource Include="Resources\sfx_assets\stop_recording.wav" />
+	</ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;Z:\RUMBLE\OBS_Control_API\obj\Debug\net6.0\OBS_Control_API.dll&quot; &quot;Z:\RUMBLE\RUMBLE_install\Mods&quot; /Y" />
-  </Target>
+
+	<ItemGroup>
+		<Reference Include="$(RumblePath)\MelonLoader\net6\**\*.dll" Private="false" />
+		<Reference Include="$(RumblePath)\MelonLoader\net35\**\*.dll" Private="false" />
+		<Reference Include="$(RumblePath)\MelonLoader\Il2CppAssemblies\**\*.dll" Private="false" />
+	</ItemGroup>
+	<ItemGroup>
+		<Reference Include="RumbleModdingAPI">
+			<HintPath>$(RumblePath)\Mods\RumbleModdingAPI.dll</HintPath>
+		</Reference>
+		<Reference Include="UIFramework">
+			<HintPath>$(RumblePath)\Mods\UIFramework.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;$(RumblePath)\Mods&quot; /Y" />
+	</Target>
 
 </Project>

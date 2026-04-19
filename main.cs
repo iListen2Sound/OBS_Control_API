@@ -63,8 +63,9 @@ namespace OBS_Control_API
 		private static string recordingDirectory = "";
 		private static string sceneUuid = "";
 		private static bool stopReplayBufferAtShutdown = false;
+        private static bool areHapticsPlaying = false;
 
-		private static GameObject OBS_SFX_Players = null;
+        private static GameObject OBS_SFX_Players = null;
 		private static GameObject screenshotSFXPlayer = null;
 		private static GameObject confirmationSFXPlayer = null;
 		private static GameObject startRecordingSFXPlayer = null;
@@ -264,9 +265,13 @@ namespace OBS_Control_API
 			switch (keyBindings[index])
 			{
 				case ControllerKeyActions.SaveReplayBuffer:
-					MelonCoroutines.Start(DelayReplayBufferSaving());
-					audioPlayer = Confirmation;
-					success = true;
+                    if (hapticsDuration > 0)
+                    {
+                        // first haptic impulse to show that the request is being processed
+                        HapticFeedback(hapticsDuration);
+                    }
+                    MelonCoroutines.Start(DelayReplayBufferSaving(Confirmation, audioLocation));
+					success = false; // prevent double feedback
 					break;
 				case ControllerKeyActions.StartRecording:
 					if (StartRecord())
@@ -334,17 +339,18 @@ namespace OBS_Control_API
 
 		/**
 		 * <summary>
-		 * Waits for the amount of time specified in the config as "ReplayBufferBuffer" before saving the replay buffer to avoid having clips that end too suddenly.
+		 * Waits for the amount of time specified in the config as "ReplayBufferBuffer"
+		 * before saving the replay buffer to avoid having clips that end too suddenly.
 		 * </summary>
 		 */
-		private IEnumerator DelayReplayBufferSaving()
+		private IEnumerator DelayReplayBufferSaving(AudioCall audioPlayer, Vector3 audioLocation)
 		{
 			yield return new WaitForSeconds(replayBufferBuffer);
 			if (SaveReplayBuffer())
 			{
 				Log($"Saved replay buffer");
-			}
-
+                Feedback(audioPlayer, audioLocation);
+            }
 		}
 
 
@@ -361,7 +367,7 @@ namespace OBS_Control_API
 			}
 			if (hapticsDuration > 0)
 			{
-				HapticFeedback(1, hapticsDuration);
+				HapticFeedback(hapticsDuration);
 			}
 		}
 
@@ -417,15 +423,40 @@ namespace OBS_Control_API
          * Perform a haptic impulse on both controllers.
          * </summary>
          */
-		public static void HapticFeedback(float intensity, float duration)
+		public static void HapticFeedback(float duration)
 		{
 			if (playerHaptics != null)
 			{
-				playerHaptics.PlayControllerHaptics(intensity, duration, intensity, duration);
-			}
-		}
+				areHapticsPlaying = true;
+                MelonCoroutines.Start(StopHapticFeedback(duration));
+            }
+        }
+
+        /**
+         * <summary>
+         * Stop the haptic feedback loop.
+         * </summary>
+         */
+        public static IEnumerator StopHapticFeedback(float duration)
+        {
+            yield return new WaitForSeconds(duration);
+            areHapticsPlaying = false;
+        }
 
 		/**
+		 * <summary>
+		 * Called on EVERY frame, used for VERY frequent updates only.
+		 * </summary>
+		 */
+		public override void OnUpdate()
+        {
+            if (playerHaptics != null && areHapticsPlaying)
+            {
+                playerHaptics.PlayControllerHaptics(1, 1, 1, 1);
+            }
+        }
+
+        /**
          * <summary>
          * Called 50 times per second, used for frequent updates.
          * </summary>
@@ -436,7 +467,7 @@ namespace OBS_Control_API
          * -iListen2Sound
          * </remarks>
          */
-		public override void OnFixedUpdate()
+        public override void OnFixedUpdate()
 		{
 			if (!bindingLocked[0] && keyBindings[0] != ControllerKeyActions.Nothing)
 			{
@@ -467,8 +498,8 @@ namespace OBS_Control_API
 						ExecuteKeyBinding(1, GetPlayerUILocation());
 					}).Start();
 				}
-			}
-		}
+            }
+        }
 		/**
 		 * <summary>
 		 * Get the position of the player's UI in the world to use as a location for the audio source. 

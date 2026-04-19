@@ -37,12 +37,12 @@ namespace OBS_Control_API
 		internal static MelonPreferences_Entry<string> IpAddress;
 		internal static MelonPreferences_Entry<int> Port;
 		internal static MelonPreferences_Entry<string> Password;
-		/**
+        /**
 		 * <summary>
 		 * Initializes the MelonPreferences entries and creates the config file if it doesn't exist.
 		 * </summary>
 		 */
-		public static void PrefInit()
+        internal static void PrefInit()
 		{
 			if (!Directory.Exists(OBS.USER_DATA))
 				Directory.CreateDirectory(OBS.USER_DATA);
@@ -56,7 +56,7 @@ namespace OBS_Control_API
 			ReplayBufferBuffer = GeneralCategory.CreateEntry("ReplayBufferBuffer", 0f, "Replay Save Delay", "Delay saving a replay buffer after pressing the keybind so your clips don't end suddenly");
 
 			BindingLeft = GeneralCategory.CreateEntry("BindingLeft", ControllerKeyActions.SaveReplayBuffer, "Left Controller Binding", "Action to perform when both buttons on the left controller are being pressed.");
-			BindingRight = GeneralCategory.CreateEntry("BindingRight", ControllerKeyActions.Nothing, "Right Controller Binding", "Action to perform when both buttons on the right controller are being pressed.");
+			BindingRight = GeneralCategory.CreateEntry("BindingRight", ControllerKeyActions.SaveScreenshot, "Right Controller Binding", "Action to perform when both buttons on the right controller are being pressed.");
 			HapticDuration = GeneralCategory.CreateEntry("HapticDuration", 0.2f, "Haptic Feedback Duration", "Duration of the haptic impulse when an action is successful (set to 0 to disable).");
 			AudioFeedback = GeneralCategory.CreateEntry("AudioFeedback", true, "Audio Feedback", "Set to true to get a sound effect when an action is successful.");
 
@@ -66,9 +66,7 @@ namespace OBS_Control_API
 			IpAddress = Connection.CreateEntry("IpAddress", "localhost", "IP Address", "IP address of the OBS websocket server.");
 			Port = Connection.CreateEntry("Port", 4455, "Port", "Port used by the OBS websocket server.");
 			Password = Connection.CreateEntry("Password", "", "Websocket Password", "Password for the OBS websocket server.");
-
 		}
-
 	}
 	/**
 	 * <summary>

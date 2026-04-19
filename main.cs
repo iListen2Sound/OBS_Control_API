@@ -1,20 +1,21 @@
-﻿using Il2CppRUMBLE.Managers;
-using Il2CppRUMBLE.Players.Subsystems;
-using Il2CppRUMBLE.Audio;
-using static Il2CppRUMBLE.Audio.AudioCall;
-using MelonLoader;
-using RumbleModdingAPI.RMAPI;
-using static RumbleModdingAPI.RMAPI.AudioManager;
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.AccessControl;
 using System.Threading;
+using ClipperLib;
+using Il2CppRUMBLE.Audio;
+using Il2CppRUMBLE.Managers;
+using Il2CppRUMBLE.Players.Subsystems;
+using MelonLoader;
+using RumbleModdingAPI.RMAPI;
 using UIFramework;
 using UnityEngine;
 using UnityEngine.Rendering;
+using static Il2CppRUMBLE.Audio.AudioCall;
+using static RumbleModdingAPI.RMAPI.AudioManager;
 
 namespace OBS_Control_API
 {
@@ -28,9 +29,9 @@ namespace OBS_Control_API
 	}
 	public partial class OBS : MelonMod
 	{
-		public const string USER_DATA = "UserData/OBS_Control_API/";
-		public const string AUDIO_RESOURCES = "sfx_assets/";
-		public const string CONFIG_FILE = "config.cfg";
+        internal const string USER_DATA = "UserData/OBS_Control_API/";
+        internal const string AUDIO_RESOURCES = "sfx_assets/";
+        internal const string CONFIG_FILE = "config.cfg";
 
 		//constants
 		private bool forceReplayBuffer = true;
@@ -137,16 +138,24 @@ namespace OBS_Control_API
 		/**
 		 * <summary>
 		 * Called when the mod is initialized, before any scene is loaded.
-		 * Initializes the MelonPreferences and register the onsave event handler.
-		 * Calls PopulateUserDataIfNeeded to extract the embedded sound effect assets to the user data folder, so they can be loaded by Unity's audio system.
+		 * Initializes the MelonPreferences and registers the onsave event handler.
+		 * Calls PopulateUserDataIfNeeded to extract the embedded sound effect assets
+		 * to the user data folder, so they can be loaded by Unity's audio system.
 		 * </summary>
 		 */
 		public override void OnInitializeMelon()
 		{
 			Preferences.PrefInit();
-			UI.Register(this, Preferences.GeneralCategory, Preferences.Connection).OnModSaved += OnUISaved;
+			if (Preferences.Password.Value == "")
+            {
+                UI.Register((MelonBase)this, Preferences.Connection, Preferences.GeneralCategory).OnModSaved += OnUISaved;
+            }
+			else
+			{
+                UI.Register((MelonBase)this, Preferences.GeneralCategory, Preferences.Connection).OnModSaved += OnUISaved;
+            }
 
-			PopulateUserDataIfNeeded();
+            PopulateUserDataIfNeeded();
 			InitAudioCalls();
 		}
 
@@ -370,23 +379,22 @@ namespace OBS_Control_API
 		 * <summary>
 		 * Checks the userdata folder if sound effect assets are present. Extract and write them if needed
 		 * </summary>
-		 * <remarks>
-		 * This doesn't work for some reason. This is the same method TacoSlayer uses in DieHarder. 
-		 * I might get more help from her to debug this. I don't know how it works lol
-		 * Manually placing the audio files in UserData/sfx_assets does work though.
-		 * -iListen2Sound
-		 * </remarks>
 		 */
 		static void PopulateUserDataIfNeeded()
 		{
 			string folderName = "sfx_assets";
 			string effectSoundsDir = USER_DATA + $"/{folderName}/";
 
-			if (!Directory.Exists(effectSoundsDir))
-			{
-				Directory.CreateDirectory(effectSoundsDir);
+            if (!Directory.Exists(effectSoundsDir))
+            {
+                Directory.CreateDirectory(effectSoundsDir);
+            }
 
-				var assembly = typeof(Core).Assembly;
+            // if the directory is not empty, that means there are audio files that the user
+            // might have replaced with their own, so we shouldn't overwrite them.
+            if (Directory.GetFiles(effectSoundsDir).Length.Equals(0))
+			{
+				var assembly = typeof(OBS).Assembly;
 				var resourceNames = assembly.GetManifestResourceNames()
 					.Where(r => r.StartsWith($"OBS_Control_API.Resources.{folderName}.", StringComparison.OrdinalIgnoreCase));
 
@@ -422,7 +430,9 @@ namespace OBS_Control_API
          * Called 50 times per second, used for frequent updates.
          * </summary>
          * <remarks>
-         * Because the new audio call system requires a location source, I opted to use the local player's UI as the source. Defaults to centerpoint of the map if that errors
+         * Because the new audio call system requires a location source,
+         * I opted to use the local player's UI as the source.
+         * Defaults to centerpoint of the map if that errors
          * -iListen2Sound
          * </remarks>
          */

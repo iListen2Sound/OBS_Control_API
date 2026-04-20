@@ -16,6 +16,8 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using static Il2CppRUMBLE.Audio.AudioCall;
 using static RumbleModdingAPI.RMAPI.AudioManager;
+using static RumbleModdingAPI.RMAPI.GameObjects.Gym.TUTORIAL.Worldtutorials.CombatCarvings.CombatCarvingCombos.CarvingHeadParent.CombosCarvinghead.Players;
+using static UnityEngine.Rendering.ProbeReferenceVolume;
 
 namespace OBS_Control_API
 {
@@ -43,9 +45,10 @@ namespace OBS_Control_API
 		private bool[] bindingLocked = { false, false };
 		private float hapticsDuration = 1;
 		private bool enableSFX = true;
+        private float SFXvolume = 1;
 
-		//AudioCalls
-		private static AudioCall Confirmation;
+        //AudioCalls
+        private static AudioCall Confirmation;
 		private static AudioCall Screenshot;
 		private static AudioCall StartRecording;
 		private static AudioCall StopRecording;
@@ -125,11 +128,11 @@ namespace OBS_Control_API
 		{
 			try
 			{
-				Confirmation = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "confirmation.wav"), 1);
-				Screenshot = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "screenshot.wav"), 1);
-				StartRecording = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "start_recording.wav"), 1);
-				StopRecording = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "stop_recording.wav"), 1);
-			}
+				Confirmation = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "confirmation.wav"), SFXvolume);
+				Screenshot = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "screenshot.wav"), SFXvolume);
+				StartRecording = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "start_recording.wav"), SFXvolume);
+				StopRecording = CreateAudioCall(Path.Combine(USER_DATA, AUDIO_RESOURCES, "stop_recording.wav"), SFXvolume);
+            }
 			catch (Exception e)
 			{
 				LogError($"Error initializing audio calls: {e}");
@@ -239,28 +242,46 @@ namespace OBS_Control_API
          * </summary>
          */
 		private void OnUISaved()
-		{
-
-			forceReplayBuffer = Preferences.EnableReplayBuffer.Value;
+        {
+            forceReplayBuffer = Preferences.EnableReplayBuffer.Value;
 			replayBufferBuffer = Preferences.ReplayBufferDelay.Value;
 			keyBindings[0] = Preferences.BindingLeft.Value;
 			keyBindings[1] = Preferences.BindingRight.Value;
 			hapticsDuration = Preferences.HapticDuration.Value;
 			enableSFX = Preferences.AudioFeedback.Value;
+            SFXvolume = Preferences.AudioVolume.Value;
 
-			ip = Preferences.IpAddress.Value;
+            ip = Preferences.IpAddress.Value;
 			port = Preferences.Port.Value;
 			password = Preferences.Password.Value;
 
-			Connect();
+			UpdateSFXvolume();
+
+            Connect();
 		}
 
-		/**
+        /**
+         * <summary>
+         * Updates the volume of all audio calls to match the value in the config.
+         * </summary>
+         */
+        private void UpdateSFXvolume()
+        {
+            AudioCall.GeneralAudioSettings generalAudioSettings = new AudioCall.GeneralAudioSettings();
+            generalAudioSettings.SetVolume(SFXvolume);
+            generalAudioSettings.Pitch = 1f;
+            Confirmation.generalSettings = generalAudioSettings;
+            Screenshot.generalSettings = generalAudioSettings;
+            StartRecording.generalSettings = generalAudioSettings;
+            StopRecording.generalSettings = generalAudioSettings;
+        }
+
+        /**
          * <summary>
          * Executes an action that is connected to a key binding.
          * </summary>
          */
-		private void ExecuteKeyBinding(int index, Vector3 audioLocation)
+        private void ExecuteKeyBinding(int index, Vector3 audioLocation)
 		{
 			bindingLocked[index] = true;
 			bool success = false;

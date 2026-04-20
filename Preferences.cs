@@ -20,8 +20,6 @@ namespace OBS_Control_API
 	 */
 	public class Preferences
 	{
-		
-
 		internal static MelonPreferences_Category GeneralCategory;
 		
 		internal static MelonPreferences_Entry<bool> EnableReplayBuffer;
@@ -30,9 +28,9 @@ namespace OBS_Control_API
 		internal static MelonPreferences_Entry<ControllerKeyActions> BindingRight;
 		internal static MelonPreferences_Entry<float> HapticDuration;
 		internal static MelonPreferences_Entry<bool> AudioFeedback;
+        internal static MelonPreferences_Entry<float> AudioVolume;
 
-
-		internal static MelonPreferences_Category Connection;
+        internal static MelonPreferences_Category Connection;
 
 		internal static MelonPreferences_Entry<string> IpAddress;
 		internal static MelonPreferences_Entry<int> Port;
@@ -59,8 +57,9 @@ namespace OBS_Control_API
 			BindingRight = GeneralCategory.CreateEntry("BindingRight", ControllerKeyActions.SaveScreenshot, "Right Controller Binding", "Action to perform when both buttons on the right controller are being pressed.");
 			HapticDuration = GeneralCategory.CreateEntry("HapticDuration", 0.2f, "Haptic Feedback Duration", "Duration of the haptic impulse when an action is successful (set to 0 to disable).");
 			AudioFeedback = GeneralCategory.CreateEntry("AudioFeedback", true, "Audio Feedback", "Set to true to get a sound effect when an action is successful.");
+            AudioVolume = GeneralCategory.CreateEntry("AudioVolume", 1f, "Audio Feedback Volume", "Volume of thesound effect when an action is successful.");
 
-			Connection = MelonPreferences.CreateCategory("WebsocketConnection", "OBS Connection");
+            Connection = MelonPreferences.CreateCategory("WebsocketConnection", "OBS Connection");
 			Connection.SetFilePath(Path.Combine(OBS.USER_DATA, OBS.CONFIG_FILE));
 
 			IpAddress = Connection.CreateEntry("IpAddress", "localhost", "IP Address", "IP address of the OBS websocket server.");

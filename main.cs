@@ -239,7 +239,7 @@ namespace OBS_Control_API
 		{
 
 			forceReplayBuffer = Preferences.EnableReplayBuffer.Value;
-			replayBufferBuffer = Preferences.ReplayBufferBuffer.Value;
+			replayBufferBuffer = Preferences.ReplayBufferDelay.Value;
 			keyBindings[0] = Preferences.BindingLeft.Value;
 			keyBindings[1] = Preferences.BindingRight.Value;
 			hapticsDuration = Preferences.HapticDuration.Value;
@@ -339,7 +339,7 @@ namespace OBS_Control_API
 
 		/**
 		 * <summary>
-		 * Waits for the amount of time specified in the config as "ReplayBufferBuffer"
+		 * Waits for the amount of time specified in the config as "ReplayBufferDelay"
 		 * before saving the replay buffer to avoid having clips that end too suddenly.
 		 * </summary>
 		 */

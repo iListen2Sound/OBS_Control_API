@@ -25,7 +25,7 @@ namespace OBS_Control_API
 		internal static MelonPreferences_Category GeneralCategory;
 		
 		internal static MelonPreferences_Entry<bool> EnableReplayBuffer;
-		internal static MelonPreferences_Entry<float> ReplayBufferBuffer;
+		internal static MelonPreferences_Entry<float> ReplayBufferDelay;
 		internal static MelonPreferences_Entry<ControllerKeyActions> BindingLeft;
 		internal static MelonPreferences_Entry<ControllerKeyActions> BindingRight;
 		internal static MelonPreferences_Entry<float> HapticDuration;
@@ -53,7 +53,7 @@ namespace OBS_Control_API
 
 			EnableReplayBuffer = GeneralCategory.CreateEntry("EnableReplayBuffer", true, "Force Enable Replay Buffer", "Never forget to start the replay buffer again!\n" +
 				"The mod will start it for you on connection and stop it as you close the game.");
-			ReplayBufferBuffer = GeneralCategory.CreateEntry("ReplayBufferBuffer", 0f, "Replay Save Delay", "Delay saving a replay buffer after pressing the keybind so your clips don't end suddenly");
+			ReplayBufferDelay = GeneralCategory.CreateEntry("ReplayBufferDelay", 0f, "Replay Save Delay", "Delay saving a replay buffer after pressing the keybind so your clips don't end suddenly");
 
 			BindingLeft = GeneralCategory.CreateEntry("BindingLeft", ControllerKeyActions.SaveReplayBuffer, "Left Controller Binding", "Action to perform when both buttons on the left controller are being pressed.");
 			BindingRight = GeneralCategory.CreateEntry("BindingRight", ControllerKeyActions.SaveScreenshot, "Right Controller Binding", "Action to perform when both buttons on the right controller are being pressed.");

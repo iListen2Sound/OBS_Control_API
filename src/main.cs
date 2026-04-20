@@ -24,7 +24,7 @@ namespace OBS_Control_API
 	public static class BuildInfo
 	{
 		public const string ModName = "OBS_Control_API";
-		public const string ModVersion = "2.0.0";
+		public const string ModVersion = "2.0.1";
 		public const string Description = "Manages a websocket connection to OBS";
 		public const string Author = "Kalamart";
 		public const string Company = "";
@@ -37,7 +37,7 @@ namespace OBS_Control_API
 
 		//constants
 		private bool forceReplayBuffer = true;
-		private float replayBufferBuffer = 0;
+		private float replayBufferDelay = 0;
 		private static string ip = "localhost";
 		private static int port = 4455;
 		private static string password = "your_password_here";
@@ -244,7 +244,7 @@ namespace OBS_Control_API
 		private void OnUISaved()
         {
             forceReplayBuffer = Preferences.EnableReplayBuffer.Value;
-			replayBufferBuffer = Preferences.ReplayBufferDelay.Value;
+			replayBufferDelay = Preferences.ReplayBufferDelay.Value;
 			keyBindings[0] = Preferences.BindingLeft.Value;
 			keyBindings[1] = Preferences.BindingRight.Value;
 			hapticsDuration = Preferences.HapticDuration.Value;
@@ -289,13 +289,13 @@ namespace OBS_Control_API
 			switch (keyBindings[index])
 			{
 				case ControllerKeyActions.SaveReplayBuffer:
-                    if (hapticsDuration > 0)
+                    if (hapticsDuration > 0 && replayBufferDelay >= 1) // if more than one second to wait
                     {
                         // first haptic impulse to show that the request is being processed
                         HapticFeedback(hapticsDuration);
                     }
                     MelonCoroutines.Start(DelayReplayBufferSaving(Confirmation, audioLocation));
-					success = false; // prevent double feedback
+					success = false;
 					break;
 				case ControllerKeyActions.StartRecording:
 					if (StartRecord())
@@ -369,7 +369,7 @@ namespace OBS_Control_API
 		 */
 		private IEnumerator DelayReplayBufferSaving(AudioCall audioPlayer, Vector3 audioLocation)
 		{
-			yield return new WaitForSeconds(replayBufferBuffer);
+			yield return new WaitForSeconds(replayBufferDelay);
 			if (SaveReplayBuffer())
 			{
 				Log($"Saved replay buffer");

@@ -1,9 +1,12 @@
+# Version 2.0.1
+- Removed double haptic impulse on replay buffer when there's less than a second of delay
+
 # Version 2.0.0
 - Switched from ModUI to the new UIFramework for configuration
 - Fixed the mod sometimes creating a duplicate websocket client when saving the configuration
-- Fixed Haptic feedback only giving a very short impulse, independently of the configured length
+- Fixed Haptic feedback only giving a very short impulse, independently from the configured duration
 - Fixed audio feedback not working (it's been months I know, but it works now)
-- Moved audio files directly to UserData, so the user can replace them with their own
+- Moved audio files directly to UserData, so the user can replace them with their own if they want to
 - Added an option to configure audio feedback volume
 - Added an option to delay replay buffer saving when pressing the buttons
 

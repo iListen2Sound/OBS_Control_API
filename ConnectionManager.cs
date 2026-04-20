@@ -86,6 +86,8 @@ namespace OBS_Control_API
                 shouldReconnect = true;
                 while (shouldReconnect)
                 {
+                    // should we wait 3 seconds before reconnecting
+                    bool shouldWait = true; 
                     try
                     {
                         ws = new ClientWebSocket();
@@ -103,6 +105,7 @@ namespace OBS_Control_API
                             }
                         }
                         OnClose();
+                        shouldWait = false;
                     }
                     catch (WebSocketException wse) when (wse.WebSocketErrorCode == WebSocketError.Faulted)
                     {
@@ -125,7 +128,7 @@ namespace OBS_Control_API
                         LogError($"Error: {ex.Message}");
                         shouldReconnect = false;
                     }
-                    if (shouldReconnect)
+                    if (shouldReconnect && shouldWait)
                     {
                         await Task.Delay(3000);
                     }
@@ -165,9 +168,9 @@ namespace OBS_Control_API
              * Close the connection and don't try to reconnect.
              * </summary>
              */
-            public async void Stop()
+            public async void Stop(bool stopReconnect = true)
             {
-                shouldReconnect = false;
+                shouldReconnect = !stopReconnect;
                 if (IsConnected())
                 {
                     Log("Closing websocket connection");

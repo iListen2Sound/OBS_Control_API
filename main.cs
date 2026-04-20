@@ -183,13 +183,16 @@ namespace OBS_Control_API
          * </summary>
          */
 		public static void Connect()
-		{
-			if (IsConnected())
+        {
+            connectionManager.UpdateWebsocketConfig(ip, port, password);
+            if (IsConnected())
 			{
-				Disconnect();
+				Disconnect(false);
 			}
-			connectionManager.UpdateWebsocketConfig(ip, port, password);
-			connectionManager.Start();
+			else
+			{
+                connectionManager.Start();
+            }
 		}
 
 		/**
@@ -197,9 +200,9 @@ namespace OBS_Control_API
          * Close the connection and don't try to reconnect.
          * </summary>
          */
-		public static void Disconnect()
+		public static void Disconnect(bool stopReconnect = true)
 		{
-			connectionManager.Stop();
+			connectionManager.Stop(stopReconnect);
 		}
 
 		/**
@@ -529,7 +532,7 @@ namespace OBS_Control_API
 				Log("Stopping replay buffer");
 				StopReplayBuffer();
 			}
-			Disconnect();
+			Disconnect(false);
 		}
 
 		/**

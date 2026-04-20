@@ -16,21 +16,24 @@ The client connects automatically as soon as the server (ie OBS Studio) is avail
 In addition to the displayed dependencies, this mod requires the **obs-websocket** plugin, which is included by default with **OBS Studio 28.0.0 and above**. For older versions, you need to install the plugin manually.
 
 ## Setup
-1. After starting the game with the mod and loading into the gym, you should be able to edit the options in ModUI by pessing **F10**. This needs to be done on the first time you use the mod, in order to configure the websocket client.
+1. After starting the game with the mod and loading into the gym, you should be able to edit the options in **UI Framework** by pessing **F9**. This needs to be done the first time you use the mod, in order to configure the websocket client.
+
+    ![Screenshot of the configuration UI](img/UI_Framework.png)
 
 2. Open OBS Studio and go to **"Tools"->"WebSocket Server Settings"**. There, check **"Enable WebSocket server"**:
 
     ![Screenshot of the settings window](img/OBS_settings.png)
     
     After that, use the server's configuration to configure the mod:
-    - Copy the password and enter it into ModUI.
-    - The IP address of the server only needs to be entered if you're running OBS and the game on different computers. Else you can leave the default value "localhost".
-    - By default, the websocket server is operating on port 4455. If you didn't change it manually then you shouldn't need to change it in ModUI.
+    1. Copy the password and enter it into UI Framework.
+    2. The IP address of the server only needs to be entered if you're running OBS and the game on different computers. Else you can leave the default value "localhost".
+    3. By default, the websocket server is operating on port 4455. If you didn't change it manually then you shouldn't need to change it in the mod.
 
     Once you save the configuration, the mod will try to connect again, and if it's successful you should see it under "**Connected WebSocket Sessions"**.
 
 3. Other options you can set in ModUI are:
     - do you want the mod to start the replay buffer automatically as soon as it connects to OBS (highly recommended)?
+    - should the replay buffer be saved with a delay after the key binding is activated?
     - what do you want the two default key bindings to do? The options are:
         - Nothing
         - Save replay buffer
@@ -40,8 +43,18 @@ In addition to the displayed dependencies, this mod requires the **obs-websocket
         - Save screenshot
     - what duration do you want for the haptic feedback after a key binding action is successful (Set to 0 to disable)?
     - do you want to have sound effects when an action is successful?
+    - how loud do you want the haptic feedback to be?
 
-The **default configuration** is set to automatically start the replay buffer when the client connects, save the replay buffer when the two buttons on the left controller are pressed (no binding for the right one), and it will give haptic feedback as confirmation that the clip was successfully saved.
+The **default configuration** is set to automatically start the replay buffer when the client connects, save the replay buffer when the two buttons on the left controller are pressed (screenshot for the right one), and it will give haptic and audio feedback as confirmation that the clip was successfully saved.
+
+## Audio feedback customization
+In order to play audio when an action is executed, the mod reads .wav files from `UserData/OBS_Control_API/sfx_assets`:
+- confirmation.wav
+- screenshot.wav
+- start_recording.wav
+- stop_recording.wav
+
+This folder is automatically filled with the right files when the mod first starts, but you can replace them with your own files (with the same names) if you want different sounds, or to remove some sound effects and not others.
 
 ## Modding API
 The mod provides 3 types of programming interfaces:

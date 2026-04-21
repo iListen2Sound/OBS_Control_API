@@ -1,3 +1,6 @@
+# Version 2.0.2
+- Fixed crash when RMAPI is outdated
+
 # Version 2.0.1
 - Removed double haptic impulse on replay buffer when there's less than a second of delay
 

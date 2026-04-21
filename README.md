@@ -16,7 +16,7 @@ The client connects automatically as soon as the server (ie OBS Studio) is avail
 In addition to the displayed dependencies, this mod requires the **obs-websocket** plugin, which is included by default with **OBS Studio 28.0.0 and above**. For older versions, you need to install the plugin manually.
 
 ## Setup
-1. After starting the game with the mod and loading into the gym, you should be able to edit the options in **UI Framework** by pessing **F9**. This needs to be done the first time you use the mod, in order to configure the websocket client.
+1. After starting the game with the mod and loading into the gym, you should be able to edit the options in **UI Framework** by pressing **F9**. This needs to be done the first time you use the mod, in order to configure the websocket client.
 
     ![Screenshot of the configuration UI](img/UI_Framework.png)
 

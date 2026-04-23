@@ -1,15 +1,16 @@
-﻿using MelonLoader;
-using RumbleModdingAPI.RMAPI;
-using UnityEngine;
-using System.Collections;
-using Il2CppRUMBLE.Players.Subsystems;
-using Il2CppRUMBLE.Managers;
-using UnityEngine.Rendering;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Reflection;
 using System.Security.AccessControl;
 using System.Threading;
-using System.Reflection;
+using Il2CppRUMBLE.Managers;
+using Il2CppRUMBLE.Players.Subsystems;
+using MelonLoader;
+using RumbleModdingAPI.RMAPI;
 using UIFramework;
-using System.IO;
+using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace OBS_Control_API
 {
@@ -75,10 +76,15 @@ namespace OBS_Control_API
 	internal enum ControllerKeyActions
 	{
 		Nothing,
-		SaveReplayBuffer,
-		StartRecording,
+        [Display(Name = "Save Replay Buffer")]
+        SaveReplayBuffer,
+        [Display(Name = "Start Recording")]
+        StartRecording,
+		[Display(Name = "Stop Recording")]
 		StopRecording,
+		[Display(Name = "Toggle Recording")]
 		ToggleRecording,
+		[Display(Name = "Save Screenshot")]
 		SaveScreenshot,
 	}
 }

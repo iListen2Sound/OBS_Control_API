@@ -10,13 +10,13 @@ This mod implements a websocket client that communicates directly with OBS and a
     - pressing both buttons on the left controller
     - pressing both buttons on the right controller
 
-The client connects automatically as soon as the server (ie OBS Studio) is available. If the server is unavailable, it will keep trying to contact it every 3 seconds. If it connects but fails to authenticate (wrong password), it will disconnect, log an error message and stop trying until the options in ModUI are changed.
+The client connects automatically as soon as the server (ie OBS Studio) is available. If the server is unavailable, it will keep trying to contact it every 3 seconds. If it connects but fails to authenticate (wrong password), it will disconnect, log an error message and stop trying until the options in UIFramework are changed.
 
 ## Requirements
 In addition to the displayed dependencies, this mod requires the **obs-websocket** plugin, which is included by default with **OBS Studio 28.0.0 and above**. For older versions, you need to install the plugin manually.
 
 ## Setup
-1. After starting the game with the mod and loading into the gym, you should be able to edit the options in **UI Framework** by pressing **F9**. This needs to be done the first time you use the mod, in order to configure the websocket client.
+1. After starting the game with the mod and loading into the gym, you should be able to edit the options in **UIFramework** by pressing **F9**. This needs to be done the first time you use the mod, in order to configure the websocket client.
 
     ![Screenshot of the configuration UI](img/UI_Framework.png)
 
@@ -25,13 +25,13 @@ In addition to the displayed dependencies, this mod requires the **obs-websocket
     ![Screenshot of the settings window](img/OBS_settings.png)
     
     After that, use the server's configuration to configure the mod:
-    1. Copy the password and enter it into UI Framework.
+    1. Copy the password and enter it into UIFramework.
     2. The IP address of the server only needs to be entered if you're running OBS and the game on different computers. Else you can leave the default value "localhost".
     3. By default, the websocket server is operating on port 4455. If you didn't change it manually then you shouldn't need to change it in the mod.
 
     Once you save the configuration, the mod will try to connect again, and if it's successful you should see it under "**Connected WebSocket Sessions"**.
 
-3. Other options you can set in ModUI are:
+3. Other options you can set in UIFramework are:
     - do you want the mod to start the replay buffer automatically as soon as it connects to OBS (highly recommended)?
     - should the replay buffer be saved with a delay after the key binding is activated?
     - what do you want the two default key bindings to do? The options are:
@@ -44,6 +44,7 @@ In addition to the displayed dependencies, this mod requires the **obs-websocket
     - what duration do you want for the haptic feedback after a key binding action is successful (Set to 0 to disable)?
     - do you want to have sound effects when an action is successful?
     - how loud do you want the haptic feedback to be?
+    - do you want the mod to automatically switch to a specific OBS scene when connecting?
 
 The **default configuration** is set to automatically start the replay buffer when the client connects, save the replay buffer when the two buttons on the left controller are pressed (screenshot for the right one), and it will give haptic and audio feedback as confirmation that the clip was successfully saved.
 
@@ -91,18 +92,6 @@ Forces the mod to open a websocket connection. If it was already connected, the 
 #### void Disconnect()
 Forces the mod to close the websocket connection. The mod will not attempt to reconnect by itself.
 
-#### void PlayConfirmationSFX()
-Play the confirmation tone that is used for the "save replay buffer" action.
-
-#### void PlayScreenshotSFX()
-Play the screenshot SFX (camera shutter sound).
-
-#### void PlayStartRecordingSFX()
-Play the "start recording" SFX (two-note rising tone).
-
-#### void PlayStopRecordingSFX()
-Play the "stop recording" SFX (two-note falling tone).
-
 #### void HapticFeedback(float intensity, float duration)
 Execute a haptic impulse on both controllers. Can be used to implement your own haptic feedback for various events.
 
@@ -119,7 +108,7 @@ Fetches the current status of the replay buffer.
 ```cs
 public class GetReplayBufferStatus
 {
-    public bool outputActive { Get; Set; }
+    public bool outputActive { get; set; }
 }
 ```
 
@@ -128,11 +117,11 @@ Fetches the current recording status.
 ```cs
 public class GetRecordStatus
 {
-    public bool outputActive { Get; Set; }
-    public bool outputPaused { Get; Set; }
-    public string outputTimecode { Get; Set; }
-    public int outputDuration { Get; Set; }
-    public long outputBytes { Get; Set; }
+    public bool outputActive { get; set; }
+    public bool outputPaused { get; set; }
+    public string outputTimecode { get; set; }
+    public int outputDuration { get; set; }
+    public long outputBytes { get; set; }
 }
 ```
 
@@ -141,14 +130,14 @@ Fetches the current streaming status.
 ```cs
 public class GetStreamStatus
 {
-    public bool outputActive { Get; Set; }
-    public bool outputReconnecting { Get; Set; }
-    public string outputTimecode { Get; Set; }
-    public int outputDuration { Get; Set; }
-    public float outputCongestion { Get; Set; }
-    public long outputBytes { Get; Set; }
-    public int outputSkippedFrames { Get; Set; }
-    public int outputTotalFrames { Get; Set; }
+    public bool outputActive { get; set; }
+    public bool outputReconnecting { get; set; }
+    public string outputTimecode { get; set; }
+    public int outputDuration { get; set; }
+    public float outputCongestion { get; set; }
+    public long outputBytes { get; set; }
+    public int outputSkippedFrames { get; set; }
+    public int outputTotalFrames { get; set; }
 }
 ```
 
@@ -157,13 +146,13 @@ Fetches the version of OBS and the negociated protocol parameters.
 ```cs
 public class GetVersion
 {
-    public string obsVersion { Get; Set; }
-    public string obsWebSocketVersion { Get; Set; }
-    public int rpcVersion { Get; Set; }
-    public string[] availableRequests { Get; Set; }
-    public string[] supportedImageFormats { Get; Set; }
-    public string platform { Get; Set; }
-    public string platformDescription { Get; Set; }
+    public string obsVersion { get; set; }
+    public string obsWebSocketVersion { get; set; }
+    public int rpcVersion { get; set; }
+    public string[] availableRequests { get; set; }
+    public string[] supportedImageFormats { get; set; }
+    public string platform { get; set; }
+    public string platformDescription { get; set; }
 }
 ```
 
@@ -187,7 +176,7 @@ Gets the name of the file that the replay buffer was saved to last time.
 ```cs
 public class GetLastReplayBufferReplay
 {
-    public string savedReplayPath { Get; Set; }
+    public string savedReplayPath { get; set; }
 }
 ```
 
@@ -199,7 +188,7 @@ Stops recording.
 ```cs
 public class StopRecord
 {
-    public string outputPath { Get; Set; }
+    public string outputPath { get; set; }
 }
 ```
 
@@ -208,7 +197,7 @@ Toggles the recording status. Stops it if it was running, starts it if it wasn't
 ```cs
 public class ToggleRecord
 {
-    public bool outputActive { Get; Set; }
+    public bool outputActive { get; set; }
 }
 ```
 
@@ -226,7 +215,7 @@ Gets the current directory that recording is saved to.
 ```cs
 public class GetRecordDirectory
 {
-    public string recordDirectory { Get; Set; }
+    public string recordDirectory { get; set; }
 }
 ```
 
@@ -241,6 +230,31 @@ Save a new screenshot from the current scene to a specific file.
 
 #### bool SaveSourceScreenshot(string sourceUuid, string imageFilePath)
 Save a new screenshot from a specific source and to a specific file.
+
+#### RequestResponse.GetSceneList GetSceneList()
+Get the list of scenes , their names and UUIDs, and the current program and preview scenes.
+```cs
+public class GetSceneList
+{
+    public string currentProgramSceneName { get; set; }
+    public string currentProgramSceneUuid { get; set; }
+    public string currentPreviewSceneName { get; set; }
+    public string currentPreviewSceneUuid { get; set; }
+    public Scene[] scenes { get; set; }
+}
+public class Scene
+{
+    public int sceneIndex { get; set; }
+    public string sceneName { get; set; }
+    public string sceneUuid { get; set; }
+}
+```
+
+#### bool SetCurrentProgramScene(string sceneName)
+Sets the current program scene by its name.
+
+#### bool SetCurrentProgramSceneByUuid(string sceneUuid)
+Sets the current program scene by its UUID.
 
 #### string SendRequest(string requestType, object parameters)
 Generic request function that can be used for requests that are not in the list above. The `parameters` object needs to be constructed specifically for the request type. The returned string is the extracted `responseData` json, it needs to be parsed differently depending on the request type. It may be `null` if the request type does not have a response in the API.

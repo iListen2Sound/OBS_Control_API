@@ -1,3 +1,6 @@
+# Version 2.1.0
+- Added option for automatic scene selection
+
 # Version 2.0.2
 - Fixed crash when RMAPI is outdated
 

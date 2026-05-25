@@ -161,6 +161,26 @@ namespace OBS_Control_API
                 MelonLogger.Error(ex.Message);
             }
         }
+        public static RequestResponse.GetSceneList GetSceneList()
+        {
+            var resp = SendRequest("GetSceneList");
+            if (resp is null) return null;
+            return JsonConvert.DeserializeObject<RequestResponse.GetSceneList>(resp);
+        }
+
+        public static bool SetCurrentProgramScene(string sceneName)
+        {
+            var parameters = new Dictionary<string, object> { ["sceneName"] = sceneName };
+            var resp = SendRequest("SetCurrentProgramScene", parameters);
+            return !(resp is null);
+        }
+
+        public static bool SetCurrentProgramSceneByUuid(string sceneUuid)
+        {
+            var parameters = new Dictionary<string, object> { ["sceneUuid"] = sceneUuid };
+            var resp = SendRequest("SetCurrentProgramScene", parameters);
+            return !(resp is null);
+        }
     }
 }
 
@@ -223,6 +243,20 @@ namespace OBS_Control_API
             public string sceneUuid { get; set; }
             public string currentProgramSceneName { get; set; }
             public string currentProgramSceneUuid { get; set; }
+        }
+        public class Scene
+        {
+            public int sceneIndex { get; set; }
+            public string sceneName { get; set; }
+            public string sceneUuid { get; set; }
+        }
+        public class GetSceneList
+        {
+            public string currentProgramSceneName { get; set; }
+            public string currentProgramSceneUuid { get; set; }
+            public string currentPreviewSceneName { get; set; }
+            public string currentPreviewSceneUuid { get; set; }
+            public Scene[] scenes { get; set; }
         }
     }
 

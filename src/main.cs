@@ -12,6 +12,7 @@ using Il2CppRUMBLE.Players.Subsystems;
 using MelonLoader;
 using RumbleModdingAPI.RMAPI;
 using UIFramework;
+using UIFramework.UiExtensions;
 using UnityEngine;
 using UnityEngine.Rendering;
 using static Il2CppRUMBLE.Audio.AudioCall;
@@ -24,7 +25,7 @@ namespace OBS_Control_API
 	public static class BuildInfo
 	{
 		public const string ModName = "OBS_Control_API";
-		public const string ModVersion = "2.0.2";
+		public const string ModVersion = "2.1.0";
 		public const string Description = "Manages a websocket connection to OBS";
 		public const string Author = "Kalamart";
 		public const string Company = "";
@@ -154,11 +155,11 @@ namespace OBS_Control_API
 			Preferences.PrefInit();
 			if (Preferences.Password.Value == "")
 			{
-				UI.Register((MelonBase)this, Preferences.Connection, Preferences.GeneralCategory).OnModSaved += OnUISaved;
+				UI.RegisterMelon((MelonBase)this, Preferences.Connection, Preferences.GeneralCategory).OnModSaved += OnUISaved;
 			}
 			else
 			{
-				UI.Register((MelonBase)this, Preferences.GeneralCategory, Preferences.Connection).OnModSaved += OnUISaved;
+				UI.RegisterMelon((MelonBase)this, Preferences.GeneralCategory, Preferences.Connection).OnModSaved += OnUISaved;
 			}
 
 			PopulateUserDataIfNeeded();
@@ -208,14 +209,17 @@ namespace OBS_Control_API
 		public static void Disconnect(bool stopReconnect = true)
 		{
 			connectionManager.Stop(stopReconnect);
-		}
+        }
 
-		/**
+		// Tracks if the dropdown in the UI is populated with the list of scenes from OBS
+        private static bool sceneListInitialized = false;
+
+        /**
 		 * <summary>
 		 * Called when the connection with OBS is 100% established and authentication is complete.
 		 * </summary>
 		 */
-		private void OnConnect()
+        private void OnConnect()
 		{
 			SetMainStatus();
 			if (!isReplayBufferActive && forceReplayBuffer)
@@ -224,14 +228,100 @@ namespace OBS_Control_API
 				stopReplayBufferAtShutdown = true;
 				StartReplayBuffer();
 			}
-		}
 
-		/**
+            ManageProgramScene();
+
+            if (!sceneListInitialized)
+			{
+                Preferences.SceneName.IsHidden = false;
+                sceneListInitialized = true;
+            }
+        }
+
+        /**
+		 * <summary>
+		 * Reads the list of scenes from OBS and tries to set the current program scene
+		 * to the one in the config, first by name then by UUID as a fallback.
+		 * Also populates the dropdown in UI Framework if it isn't done yet
+		 * </summary>
+		 */
+        private void ManageProgramScene()
+		{
+			var sceneList = GetSceneList();
+			if (sceneList == null)
+			{
+				return;
+			}
+            string fallbackUuid = "";
+            string fallbackName = "";
+            foreach (var scene in sceneList.scenes.Reverse())
+            {
+				if (!sceneListInitialized)
+                {
+                    Preferences.SceneChoiceDescriptor.AddDropdownItem(new DropdownItem(scene.sceneName, scene.sceneName));
+                }
+                if (scene.sceneName == Preferences.SceneName.Value)
+                {
+                    fallbackUuid = scene.sceneUuid;
+                }
+                if (scene.sceneUuid == Preferences.SceneUuid.Value)
+                {
+                    fallbackName = scene.sceneName;
+                }
+            }
+
+			bool undefinedSceneName = Preferences.SceneName.Value == "none";
+			bool emptyUuid = Preferences.SceneUuid.Value == "";
+            if (undefinedSceneName && !emptyUuid) // default situation
+			{
+                // removing UUID if the user doesn't want to use the scene name
+				Preferences.SceneUuid.Value = "";
+                Preferences.GeneralCategory.SaveToFile();
+            }
+			else
+            {
+                bool success = false;
+                // if a scene name is defined in the config, try to set the scene using the name.
+                if (!undefinedSceneName && Preferences.SceneName.Value != "")
+                {
+                    success = SetCurrentProgramScene(Preferences.SceneName.Value);
+                    if (success)
+                    {
+                        Log($"Successfully set current scene \"{Preferences.SceneName.Value}\"");
+                        if (fallbackUuid != Preferences.SceneUuid.Value)
+                        {
+                            Preferences.SceneUuid.Value = fallbackUuid;
+                            Preferences.GeneralCategory.SaveToFile();
+                        }
+                    }
+                }
+
+                // if the previous step failed but a UUID is defined, try using it as a fallback.
+                if (!success && !emptyUuid)
+                {
+                    LogWarn($"Failed to set current scene to \"{Preferences.SceneName.Value}\", falling back to UUID {Preferences.SceneUuid.Value}");
+                    success = SetCurrentProgramSceneByUuid(Preferences.SceneUuid.Value);
+                    if (success)
+                    {
+                        Log($"Successfully set current scene \"{fallbackName}\"");
+                        Preferences.SceneName.Value = fallbackName;
+                        Preferences.GeneralCategory.SaveToFile();
+                    }
+                }
+
+                if (!success)
+                {
+                    LogError($"Failed to set current scene using both the name and the UUID");
+                }
+            }
+        }
+
+        /**
 		 * <summary>
 		 * Called when the connection with OBS is closed.
 		 * </summary>
 		 */
-		private void OnDisconnect()
+        private void OnDisconnect()
 		{
 			isReplayBufferActive = false;
 			isRecordingActive = false;
@@ -282,8 +372,7 @@ namespace OBS_Control_API
 			{
 				LogError($"Error updating SFX volume: {e}");
 			}
-
-		}
+        }
 
 		/**
 		 * <summary>

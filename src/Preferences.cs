@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Reflection;
@@ -9,8 +10,7 @@ using Il2CppRUMBLE.Players.Subsystems;
 using MelonLoader;
 using RumbleModdingAPI.RMAPI;
 using UIFramework;
-using UnityEngine;
-using UnityEngine.Rendering;
+using UIFramework.UiExtensions;
 
 namespace OBS_Control_API
 {
@@ -36,6 +36,11 @@ namespace OBS_Control_API
 		internal static MelonPreferences_Entry<string> IpAddress;
 		internal static MelonPreferences_Entry<int> Port;
 		internal static MelonPreferences_Entry<string> Password;
+
+		internal static DynamicDropdownDescriptor SceneChoiceDescriptor;
+        internal static MelonPreferences_Entry<string> SceneName;
+		internal static MelonPreferences_Entry<string> SceneUuid;
+
         /**
 		 * <summary>
 		 * Initializes the MelonPreferences entries and creates the config file if it doesn't exist.
@@ -60,14 +65,19 @@ namespace OBS_Control_API
 			AudioFeedback = GeneralCategory.CreateEntry("AudioFeedback", true, "Audio Feedback", "Set to true to get a sound effect when an action is successful.");
             AudioVolume = GeneralCategory.CreateEntry("AudioVolume", 1f, "Audio Feedback Volume", "Volume of thesound effect when an action is successful.");
 
+            SceneChoiceDescriptor = new(new List<DropdownItem>());
+            SceneChoiceDescriptor.AddDropdownItem(new DropdownItem("None", "none")); // default
+            SceneName = GeneralCategory.CreateEntry("SceneName", "none", "Scene choice", "Choose which program scene OBS should switch to automatically when the mod connects to it.", true, false, Preferences.SceneChoiceDescriptor);
+            SceneUuid = GeneralCategory.CreateEntry("SceneUuid", "", "Scene UUID", "UUID of the selected OBS scene (hidden fallback if scene name not found).", true);
+
             Connection = MelonPreferences.CreateCategory("WebsocketConnection", "OBS Connection");
 			Connection.SetFilePath(Path.Combine(OBS.USER_DATA, OBS.CONFIG_FILE));
 
 			IpAddress = Connection.CreateEntry("IpAddress", "localhost", "IP Address", "IP address of the OBS websocket server.");
 			Port = Connection.CreateEntry("Port", 4455, "Port", "Port used by the OBS websocket server.");
 			Password = Connection.CreateEntry("Password", "", "Websocket Password", "Password for the OBS websocket server.");
-		}
-	}
+}
+    }
 	/**
 	 * <summary>
 	 * Enum defining the possible actions that can be bound to the controller buttons.

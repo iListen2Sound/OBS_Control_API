@@ -183,12 +183,13 @@ namespace OBS_Control_API
 			}
 		}
 
-		/**
+        /**
 		 * <summary>
-		 * (Re)start connection thread.
+		 * Forces the mod to open a websocket connection.
+		 * If it was already connected, the old connection is killed and a new one is initiated.
 		 * </summary>
 		 */
-		public static void Connect()
+        public static void Connect()
 		{
 			connectionManager.UpdateWebsocketConfig(ip, port, password);
 			if (IsConnected())
@@ -201,12 +202,13 @@ namespace OBS_Control_API
 			}
 		}
 
-		/**
+        /**
 		 * <summary>
-		 * Close the connection and don't try to reconnect.
+		 * Forces the mod to close the websocket connection.
+		 * The mod will not attempt to reconnect by itself.
 		 * </summary>
 		 */
-		public static void Disconnect(bool stopReconnect = true)
+        public static void Disconnect(bool stopReconnect = true)
 		{
 			connectionManager.Stop(stopReconnect);
         }
@@ -220,21 +222,43 @@ namespace OBS_Control_API
 		 * </summary>
 		 */
         private void OnConnect()
-		{
-			SetMainStatus();
+        {
+            ManageProgramScene();
+            if (!sceneListInitialized)
+            {
+                Preferences.SceneName.IsHidden = false;
+                sceneListInitialized = true;
+            }
+
+            SetMainStatus();
 			if (!isReplayBufferActive && forceReplayBuffer)
 			{
 				Log($"Replay Buffer was inactive, starting it...");
 				stopReplayBufferAtShutdown = true;
 				StartReplayBuffer();
 			}
+        }
 
-            ManageProgramScene();
-
-            if (!sceneListInitialized)
-			{
-                Preferences.SceneName.IsHidden = false;
-                sceneListInitialized = true;
+        /**
+         * <summary>
+         * Initializes the main status variables.
+         * </summary>
+         */
+        private void SetMainStatus()
+        {
+            try
+            {
+                isReplayBufferActive = GetReplayBufferStatus().outputActive;
+                var recordStatus = GetRecordStatus();
+                isRecordingActive = recordStatus.outputActive && !recordStatus.outputPaused;
+                isStreamActive = GetStreamStatus().outputActive;
+                sceneUuid = GetCurrentProgramScene().sceneUuid;
+                isWindows = (GetVersion().platform == "windows");
+                recordingDirectory = GetRecordDirectory().recordDirectory;
+            }
+            catch (Exception ex)
+            {
+                MelonLogger.Error(ex.Message);
             }
         }
 
@@ -507,16 +531,6 @@ namespace OBS_Control_API
 			{
 				HapticFeedback(hapticsDuration);
 			}
-		}
-
-		/**
-		 * <summary>
-		 * Play the confirmation tone that is used for the "save replay buffer" action.
-		 * </summary>
-		 */
-		public static void playConfirmationSFX()
-		{
-			confirmationSFXPlayer.GetComponent<AudioSource>().Play();
 		}
 
 		/**

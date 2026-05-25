@@ -37,7 +37,7 @@ namespace OBS_Control_API
              * Initialize connection manager.
              * </summary>
              */
-            public ConnectionManager(RequestManager manager, string OBS_ip, int OBS_port, string OBS_password)
+            internal ConnectionManager(RequestManager manager, string OBS_ip, int OBS_port, string OBS_password)
             {
                 requestManager = manager;
                 manager.SetConnectionManager(this);
@@ -49,7 +49,7 @@ namespace OBS_Control_API
              * Update the URL and password used by the websocket client.
              * </summary>
              */
-            public void UpdateWebsocketConfig(string OBS_ip, int OBS_port, string OBS_password)
+            internal void UpdateWebsocketConfig(string OBS_ip, int OBS_port, string OBS_password)
             {
                 URL = "ws://" + OBS_ip + ":" + OBS_port;
                 PASSWORD = OBS_password;
@@ -60,7 +60,7 @@ namespace OBS_Control_API
              * Returns true if the client is connected to OBS, ready to send requests and receive events.
              * </summary>
              */
-            public bool IsConnected()
+            internal bool IsConnected()
             {
                 return (ws.State == WebSocketState.Open);
             }
@@ -70,7 +70,7 @@ namespace OBS_Control_API
              * Start the connection thread.
              * </summary>
              */
-            public void Start()
+            internal void Start()
             {
                 Task.Run((Func<Task>)(() => ConnectAsync()));
             }
@@ -168,7 +168,7 @@ namespace OBS_Control_API
              * Close the connection and don't try to reconnect.
              * </summary>
              */
-            public async void Stop(bool stopReconnect = true)
+            internal async void Stop(bool stopReconnect = true)
             {
                 shouldReconnect = !stopReconnect;
                 if (IsConnected())
@@ -264,7 +264,7 @@ namespace OBS_Control_API
              * Send a message to the OBS websocket server.
              * </summary>
              */
-            public async void SendMsg(object msg)
+            internal async void SendMsg(object msg)
             {
                 if (ws.State != WebSocketState.Open) return;
                 var buffer = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(msg));

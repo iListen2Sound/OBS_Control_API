@@ -23,7 +23,7 @@ namespace OBS_Control_API
              * Initialize request manager.
              * </summary>
              */
-            public RequestManager()
+            internal RequestManager()
             {
                 currentRequests = new Dictionary<string, RequestResponse>();
             }
@@ -33,7 +33,7 @@ namespace OBS_Control_API
              * Set the instance of the connection manager that is to be used for the requests
              * </summary>
              */
-            public void SetConnectionManager(ConnectionManager manager)
+            internal void SetConnectionManager(ConnectionManager manager)
             {
                 connectionManager = manager;
             }
@@ -44,7 +44,7 @@ namespace OBS_Control_API
              * Returned value is a string representation of responseData.
              * </summary>
              */
-            public string SendRequest(string requestType, object parameters)
+            internal string SendRequest(string requestType, object parameters)
             {
                 RequestResponse resp = null;
                 int attempts = 0;
@@ -132,7 +132,7 @@ namespace OBS_Control_API
              * Uses the requestId in order to update the pending request.
              * </summary>
              */
-            public void ReceiveResponse(string data_str)
+            internal void ReceiveResponse(string data_str)
             {
                 var data = JsonConvert.DeserializeObject<RequestResponseRaw>(data_str);
                 var requestId = data.requestId;
